@@ -16,7 +16,6 @@
 body {
   background: #0b1a2a;
   color: #fff;
-  scroll-behavior: smooth;
 }
 
 /* HEADER */
@@ -33,7 +32,6 @@ header {
 
 header h1 {
   color: gold;
-  font-size: 22px;
 }
 
 nav a {
@@ -42,83 +40,48 @@ nav a {
   text-decoration: none;
 }
 
-nav a:hover {
-  color: gold;
-}
-
 /* HERO */
 .hero {
   height: 100vh;
   background: url('https://images.unsplash.com/photo-1542314831-068cd1dbfeeb') center/cover;
   display: flex;
-  flex-direction: column;
   justify-content: center;
   align-items: center;
+  flex-direction: column;
   text-align: center;
 }
 
 .hero h2 {
-  font-size: 45px;
+  font-size: 40px;
   color: gold;
 }
 
 .btn {
   background: gold;
-  color: #000;
-  padding: 12px 20px;
-  margin: 10px;
+  color: black;
+  padding: 12px 18px;
   border: none;
   cursor: pointer;
-  border-radius: 5px;
-  font-weight: bold;
+  margin-top: 10px;
 }
 
-/* SECTIONS */
+/* FORM */
 section {
-  padding: 80px 40px;
+  padding: 80px 20px;
 }
 
-h2.section-title {
-  text-align: center;
-  margin-bottom: 30px;
-  color: gold;
-}
-
-/* GRID */
-.rooms, .facilities {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 20px;
-}
-
-.card {
+form {
+  max-width: 600px;
+  margin: auto;
   background: #12263a;
   padding: 20px;
   border-radius: 10px;
 }
 
-/* FORM */
 input, select, textarea {
   width: 100%;
   padding: 10px;
   margin: 8px 0;
-  border-radius: 5px;
-  border: none;
-}
-
-form {
-  background: #12263a;
-  padding: 20px;
-  border-radius: 10px;
-  max-width: 600px;
-  margin: auto;
-}
-
-/* FOOTER */
-footer {
-  text-align: center;
-  padding: 20px;
-  background: #06121f;
 }
 
 /* ADMIN */
@@ -129,7 +92,7 @@ footer {
   left: 0;
   width: 100%;
   height: 100%;
-  background: rgba(0,0,0,0.75);
+  background: rgba(0,0,0,0.7);
   justify-content: center;
   align-items: center;
 }
@@ -137,15 +100,26 @@ footer {
 .modal-content {
   background: #12263a;
   padding: 20px;
-  border-radius: 10px;
   width: 90%;
   max-width: 500px;
+  border-radius: 10px;
+}
+
+/* 🔥 SCROLL FIX */
+#bookings {
+  max-height: 300px;
+  overflow-y: auto;
+  margin-top: 10px;
 }
 
 .booking-item {
   background: #1a2f45;
   padding: 10px;
   margin: 10px 0;
+}
+
+button {
+  margin-top: 5px;
 }
 </style>
 
@@ -162,11 +136,7 @@ emailjs.init("F65Acn1Zz8d8kPQEx");
 <header>
   <h1>Thuringerhof Hotel</h1>
   <nav>
-    <a href="#about">About</a>
-    <a href="#rooms">Rooms</a>
-    <a href="#facilities">Facilities</a>
     <a href="#booking">Booking</a>
-    <a href="#contact">Contact</a>
     <a href="#" onclick="openAdmin()">Admin</a>
   </nav>
 </header>
@@ -177,10 +147,10 @@ emailjs.init("F65Acn1Zz8d8kPQEx");
 </div>
 
 <section id="booking">
-  <h2 class="section-title">Book Your Stay</h2>
+  <h2>Book Your Stay</h2>
 
   <form onsubmit="submitBooking(event)">
-    <input id="name" placeholder="Full Name" required />
+    <input id="name" placeholder="Name" required />
     <input id="phone" placeholder="Phone" required />
     <input id="email" placeholder="Email" required />
     <input id="checkin" type="date" required />
@@ -202,7 +172,7 @@ emailjs.init("F65Acn1Zz8d8kPQEx");
 <!-- ADMIN -->
 <div id="adminModal" class="modal">
   <div class="modal-content">
-    <h2>Admin Login</h2>
+    <h2>Admin Panel</h2>
 
     <input id="adminUser" placeholder="Username">
     <input id="adminPass" type="password" placeholder="Password">
@@ -216,10 +186,6 @@ emailjs.init("F65Acn1Zz8d8kPQEx");
     </div>
   </div>
 </div>
-
-<footer>
-  © 2026 Thuringerhof Hotel
-</footer>
 
 <script>
 let bookings = JSON.parse(localStorage.getItem("bookings")) || [];
@@ -243,8 +209,7 @@ function submitBooking(e){
   bookings.push(booking);
   localStorage.setItem("bookings", JSON.stringify(bookings));
 
-  // EMAIL (SAFE)
-  emailjs.send("service_tn16zcu", "template_h4oq7mf", {
+  emailjs.send("service_vb3u2rs", "template_h4oq7mf", {
     name: booking.name,
     phone: booking.phone,
     email: booking.email,
@@ -253,7 +218,7 @@ function submitBooking(e){
     room: booking.room,
     message: booking.requests,
     guests: booking.guests
-  }).catch(err => console.log(err));
+  });
 
   alert("Booking submitted!");
   e.target.reset();
@@ -280,6 +245,7 @@ function login(){
   }
 }
 
+/* 🔥 SCROLLABLE BOOKINGS */
 function loadBookings(){
   const container = document.getElementById("bookings");
   container.innerHTML = "";
@@ -288,8 +254,12 @@ function loadBookings(){
     container.innerHTML += `
       <div class="booking-item">
         <b>${b.name}</b><br/>
-        ${b.room} | ${b.checkin} → ${b.checkout}<br/>
-        Status: ${b.status}
+        ${b.room}<br/>
+        ${b.checkin} → ${b.checkout}<br/>
+        Status: ${b.status}<br/>
+
+        <button onclick="approve(${i})">Accept</button>
+        <button onclick="reject(${i})">Reject</button>
       </div>
     `;
   });
@@ -308,9 +278,8 @@ function reject(i){
 }
 
 window.onclick = function(e){
-  const modal = document.getElementById("adminModal");
-  if(e.target === modal){
-    modal.style.display = "none";
+  if(e.target === document.getElementById("adminModal")){
+    closeAdmin();
   }
 }
 </script>
