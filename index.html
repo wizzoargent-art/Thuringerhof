@@ -3,49 +3,51 @@
 <script>
 emailjs.init("F65Acn1Zz8d8kPQEx");
 
-/* BOOKINGS STORAGE */
+/* BOOKINGS */
 let bookings = JSON.parse(localStorage.getItem("bookings")) || [];
 
-/* BOOKING FUNCTION (UPDATED ONLY WITH EMAILJS) */
+/* SAFE BOOKING FUNCTION */
 function submitBooking(e){
   e.preventDefault();
 
   const booking = {
-    name: name.value,
-    phone: phone.value,
-    email: email.value,
-    checkin: checkin.value,
-    checkout: checkout.value,
-    guests: guests.value,
-    room: room.value,
-    requests: requests.value,
+    name: document.getElementById("name").value,
+    phone: document.getElementById("phone").value,
+    email: document.getElementById("email").value,
+    checkin: document.getElementById("checkin").value,
+    checkout: document.getElementById("checkout").value,
+    guests: document.getElementById("guests").value,
+    room: document.getElementById("room").value,
+    requests: document.getElementById("requests").value,
     status: "Pending"
   };
 
-  // Save locally (your admin system still works)
+  // SAVE LOCALLY (ADMIN STILL WORKS)
   bookings.push(booking);
   localStorage.setItem("bookings", JSON.stringify(bookings));
 
-  // EMAIL CONFIRMATION (NEW FEATURE ONLY)
-  emailjs.send("service_tn16zcu", "template_h4oq7mf", {
-    name: booking.name,
-    email: booking.email,
-    phone: booking.phone,
-    checkin: booking.checkin,
-    checkout: booking.checkout,
-    room: booking.room,
-    message: booking.requests,
-    guests: booking.guests
-  })
-  .then(() => {
-    alert("Booking submitted successfully! Email sent.");
-    e.target.reset();
-  })
-  .catch((error) => {
-    console.log("EmailJS Error:", error);
-    alert("Booking saved, but email failed. Check EmailJS setup.");
-    e.target.reset();
-  });
+  // EMAIL (SAFE - WON'T BREAK PAGE)
+  try {
+    emailjs.send("service_tn16zcu", "template_h4oq7mf", {
+      name: booking.name,
+      email: booking.email,
+      phone: booking.phone,
+      checkin: booking.checkin,
+      checkout: booking.checkout,
+      room: booking.room,
+      message: booking.requests,
+      guests: booking.guests
+    }).then(() => {
+      alert("Booking sent successfully!");
+    }).catch((err) => {
+      console.log("EmailJS failed:", err);
+      alert("Booking saved but email failed.");
+    });
+  } catch (e) {
+    console.log("Email system error:", e);
+  }
+
+  e.target.reset();
 }
 
 /* ADMIN (UNCHANGED) */
@@ -58,8 +60,9 @@ function closeAdmin(){
 }
 
 function login(){
-  if(adminUser.value === "admin" && adminPass.value === "demo123"){
-    dashboard.style.display = "block";
+  if(document.getElementById("adminUser").value === "admin" &&
+     document.getElementById("adminPass").value === "demo123"){
+    document.getElementById("dashboard").style.display = "block";
     loadBookings();
   } else {
     alert("Invalid login");
