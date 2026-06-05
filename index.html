@@ -30,9 +30,7 @@ header {
   z-index: 1000;
 }
 
-header h1 {
-  color: gold;
-}
+header h1 { color: gold; }
 
 nav a {
   color: white;
@@ -65,11 +63,26 @@ nav a {
   margin-top: 10px;
 }
 
-/* FORM */
+/* SECTIONS */
 section {
   padding: 80px 20px;
 }
 
+/* ABOUT */
+#about p {
+  max-width: 800px;
+  margin: auto;
+  text-align: center;
+  line-height: 1.6;
+}
+
+/* CONTACT */
+#contact {
+  text-align: center;
+  line-height: 1.8;
+}
+
+/* FORM */
 form {
   max-width: 600px;
   margin: auto;
@@ -82,6 +95,18 @@ input, select, textarea {
   width: 100%;
   padding: 10px;
   margin: 8px 0;
+}
+
+/* SUCCESS */
+#successMessage {
+  display: none;
+  margin: 15px auto;
+  padding: 15px;
+  background: green;
+  color: white;
+  border-radius: 8px;
+  text-align: center;
+  max-width: 600px;
 }
 
 /* ADMIN */
@@ -105,7 +130,7 @@ input, select, textarea {
   border-radius: 10px;
 }
 
-/* SCROLL FIX */
+/* SCROLL */
 #bookings {
   max-height: 300px;
   overflow-y: auto;
@@ -119,7 +144,6 @@ input, select, textarea {
 }
 </style>
 
-<!-- EMAILJS -->
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script>
 emailjs.init("F65Acn1Zz8d8kPQEx");
@@ -132,7 +156,9 @@ emailjs.init("F65Acn1Zz8d8kPQEx");
 <header>
   <h1>Thuringerhof Hotel</h1>
   <nav>
+    <a href="#about">About</a>
     <a href="#booking">Booking</a>
+    <a href="#contact">Contact</a>
     <a href="#" onclick="openAdmin()">Admin</a>
   </nav>
 </header>
@@ -142,6 +168,16 @@ emailjs.init("F65Acn1Zz8d8kPQEx");
   <button class="btn" onclick="document.getElementById('booking').scrollIntoView()">Book Now</button>
 </div>
 
+<!-- ABOUT -->
+<section id="about">
+  <h2>About Us</h2>
+  <p>
+    Welcome to Thuringerhof Hotel in Windhoek, Namibia. We provide luxury accommodation,
+    modern comfort, and excellent service for both business and leisure travelers.
+  </p>
+</section>
+
+<!-- BOOKING -->
 <section id="booking">
   <h2>Book Your Stay</h2>
 
@@ -163,6 +199,20 @@ emailjs.init("F65Acn1Zz8d8kPQEx");
 
     <button class="btn" type="submit">Submit Booking</button>
   </form>
+
+  <div id="successMessage">
+    Booking successful ✔ We will contact you via email shortly.
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section id="contact">
+  <h2>Contact Us</h2>
+  <p>
+    📞 +264 00 000 000<br/>
+    ✉ info@thuringerhofhotel.com<br/>
+    📍 Windhoek, Namibia
+  </p>
 </section>
 
 <!-- ADMIN -->
@@ -191,34 +241,23 @@ function submitBooking(e){
   e.preventDefault();
 
   const booking = {
-    name: document.getElementById("name").value,
-    phone: document.getElementById("phone").value,
-    email: document.getElementById("email").value,
-    checkin: document.getElementById("checkin").value,
-    checkout: document.getElementById("checkout").value,
-    guests: document.getElementById("guests").value,
-    room: document.getElementById("room").value,
-    requests: document.getElementById("requests").value,
+    name: name.value,
+    phone: phone.value,
+    email: email.value,
+    checkin: checkin.value,
+    checkout: checkout.value,
+    guests: guests.value,
+    room: room.value,
+    requests: requests.value,
     status: "Pending"
   };
 
   bookings.push(booking);
   localStorage.setItem("bookings", JSON.stringify(bookings));
 
-  // 1. EMAIL TO HOTEL (BOOKING RECEIVED)
-  emailjs.send("service_vb3u2rs", "template_h4oq7mf", {
-    name: booking.name,
-    phone: booking.phone,
-    email: booking.email,
-    checkin: booking.checkin,
-    checkout: booking.checkout,
-    room: booking.room,
-    message: booking.requests,
-    guests: booking.guests
-  });
+  emailjs.send("service_vb3u2rs", "template_h4oq7mf", booking);
 
-  // 2. EMAIL TO CUSTOMER (CONFIRMATION)
-  emailjs.send("service_vb3u2rs", "booking_confirmation", {
+  emailjs.send("service_vb3u2rs", "template_r2p2aec", {
     name: booking.name,
     email: booking.email,
     room: booking.room,
@@ -227,7 +266,11 @@ function submitBooking(e){
     guests: booking.guests
   });
 
-  alert("Booking submitted!");
+  document.getElementById("successMessage").style.display = "block";
+  setTimeout(() => {
+    document.getElementById("successMessage").style.display = "none";
+  }, 5000);
+
   e.target.reset();
 }
 
@@ -241,18 +284,15 @@ function closeAdmin(){
 }
 
 function login(){
-  if(
-    document.getElementById("adminUser").value === "admin" &&
-    document.getElementById("adminPass").value === "demo123"
-  ){
-    document.getElementById("dashboard").style.display = "block";
+  if(adminUser.value === "admin" && adminPass.value === "demo123"){
+    dashboard.style.display = "block";
     loadBookings();
   } else {
     alert("Invalid login");
   }
 }
 
-/* BOOKINGS DISPLAY */
+/* BOOKINGS */
 function loadBookings(){
   const container = document.getElementById("bookings");
   container.innerHTML = "";
@@ -304,7 +344,6 @@ function reject(i){
   });
 }
 
-/* CLOSE MODAL */
 window.onclick = function(e){
   if(e.target === document.getElementById("adminModal")){
     closeAdmin();
@@ -313,4 +352,4 @@ window.onclick = function(e){
 </script>
 
 </body>
-  </html>
+</html>
