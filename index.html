@@ -1,12 +1,230 @@
-<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Thuringerhof Hotel</title>
 
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+body {
+  background: #0b1a2a;
+  color: #fff;
+  scroll-behavior: smooth;
+}
+
+/* HEADER */
+header {
+  position: fixed;
+  width: 100%;
+  top: 0;
+  background: rgba(11,26,42,0.9);
+  display: flex;
+  justify-content: space-between;
+  padding: 15px 40px;
+  z-index: 1000;
+}
+
+header h1 {
+  color: gold;
+  font-size: 22px;
+}
+
+nav a {
+  color: white;
+  margin: 0 12px;
+  text-decoration: none;
+}
+
+nav a:hover {
+  color: gold;
+}
+
+/* HERO */
+.hero {
+  height: 100vh;
+  background: url('https://images.unsplash.com/photo-1542314831-068cd1dbfeeb') center/cover;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.hero h2 {
+  font-size: 45px;
+  color: gold;
+}
+
+.btn {
+  background: gold;
+  color: #000;
+  padding: 12px 20px;
+  margin: 10px;
+  border: none;
+  cursor: pointer;
+  border-radius: 5px;
+  font-weight: bold;
+}
+
+/* SECTIONS */
+section {
+  padding: 80px 40px;
+}
+
+h2.section-title {
+  text-align: center;
+  margin-bottom: 30px;
+  color: gold;
+}
+
+/* GRID */
+.rooms, .facilities {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.card {
+  background: #12263a;
+  padding: 20px;
+  border-radius: 10px;
+}
+
+/* FORM */
+input, select, textarea {
+  width: 100%;
+  padding: 10px;
+  margin: 8px 0;
+  border-radius: 5px;
+  border: none;
+}
+
+form {
+  background: #12263a;
+  padding: 20px;
+  border-radius: 10px;
+  max-width: 600px;
+  margin: auto;
+}
+
+/* FOOTER */
+footer {
+  text-align: center;
+  padding: 20px;
+  background: #06121f;
+}
+
+/* ADMIN */
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.75);
+  justify-content: center;
+  align-items: center;
+}
+
+.modal-content {
+  background: #12263a;
+  padding: 20px;
+  border-radius: 10px;
+  width: 90%;
+  max-width: 500px;
+}
+
+.booking-item {
+  background: #1a2f45;
+  padding: 10px;
+  margin: 10px 0;
+}
+</style>
+
+<!-- EMAILJS -->
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script>
 emailjs.init("F65Acn1Zz8d8kPQEx");
+</script>
 
-/* BOOKINGS */
+</head>
+
+<body>
+
+<header>
+  <h1>Thuringerhof Hotel</h1>
+  <nav>
+    <a href="#about">About</a>
+    <a href="#rooms">Rooms</a>
+    <a href="#facilities">Facilities</a>
+    <a href="#booking">Booking</a>
+    <a href="#contact">Contact</a>
+    <a href="#" onclick="openAdmin()">Admin</a>
+  </nav>
+</header>
+
+<div class="hero">
+  <h2>Experience Comfort</h2>
+  <button class="btn" onclick="document.getElementById('booking').scrollIntoView()">Book Now</button>
+</div>
+
+<section id="booking">
+  <h2 class="section-title">Book Your Stay</h2>
+
+  <form onsubmit="submitBooking(event)">
+    <input id="name" placeholder="Full Name" required />
+    <input id="phone" placeholder="Phone" required />
+    <input id="email" placeholder="Email" required />
+    <input id="checkin" type="date" required />
+    <input id="checkout" type="date" required />
+    <input id="guests" type="number" placeholder="Guests" required />
+
+    <select id="room">
+      <option>Standard</option>
+      <option>Deluxe</option>
+      <option>Suite</option>
+    </select>
+
+    <textarea id="requests" placeholder="Requests"></textarea>
+
+    <button class="btn" type="submit">Submit Booking</button>
+  </form>
+</section>
+
+<!-- ADMIN -->
+<div id="adminModal" class="modal">
+  <div class="modal-content">
+    <h2>Admin Login</h2>
+
+    <input id="adminUser" placeholder="Username">
+    <input id="adminPass" type="password" placeholder="Password">
+
+    <button class="btn" onclick="login()">Login</button>
+    <button class="btn" onclick="closeAdmin()" style="background:red;">Close</button>
+
+    <div id="dashboard" style="display:none;">
+      <h3>Bookings</h3>
+      <div id="bookings"></div>
+    </div>
+  </div>
+</div>
+
+<footer>
+  © 2026 Thuringerhof Hotel
+</footer>
+
+<script>
 let bookings = JSON.parse(localStorage.getItem("bookings")) || [];
 
-/* SAFE BOOKING FUNCTION */
+/* BOOKING + EMAIL */
 function submitBooking(e){
   e.preventDefault();
 
@@ -22,35 +240,26 @@ function submitBooking(e){
     status: "Pending"
   };
 
-  // SAVE LOCALLY (ADMIN STILL WORKS)
   bookings.push(booking);
   localStorage.setItem("bookings", JSON.stringify(bookings));
 
-  // EMAIL (SAFE - WON'T BREAK PAGE)
-  try {
-    emailjs.send("service_tn16zcu", "template_h4oq7mf", {
-      name: booking.name,
-      email: booking.email,
-      phone: booking.phone,
-      checkin: booking.checkin,
-      checkout: booking.checkout,
-      room: booking.room,
-      message: booking.requests,
-      guests: booking.guests
-    }).then(() => {
-      alert("Booking sent successfully!");
-    }).catch((err) => {
-      console.log("EmailJS failed:", err);
-      alert("Booking saved but email failed.");
-    });
-  } catch (e) {
-    console.log("Email system error:", e);
-  }
+  // EMAIL (SAFE)
+  emailjs.send("service_tn16zcu", "template_h4oq7mf", {
+    name: booking.name,
+    phone: booking.phone,
+    email: booking.email,
+    checkin: booking.checkin,
+    checkout: booking.checkout,
+    room: booking.room,
+    message: booking.requests,
+    guests: booking.guests
+  }).catch(err => console.log(err));
 
+  alert("Booking submitted!");
   e.target.reset();
 }
 
-/* ADMIN (UNCHANGED) */
+/* ADMIN */
 function openAdmin(){
   document.getElementById("adminModal").style.display = "flex";
 }
@@ -60,8 +269,10 @@ function closeAdmin(){
 }
 
 function login(){
-  if(document.getElementById("adminUser").value === "admin" &&
-     document.getElementById("adminPass").value === "demo123"){
+  if(
+    document.getElementById("adminUser").value === "admin" &&
+    document.getElementById("adminPass").value === "demo123"
+  ){
     document.getElementById("dashboard").style.display = "block";
     loadBookings();
   } else {
@@ -78,9 +289,7 @@ function loadBookings(){
       <div class="booking-item">
         <b>${b.name}</b><br/>
         ${b.room} | ${b.checkin} → ${b.checkout}<br/>
-        Status: ${b.status}<br/><br/>
-        <button onclick="approve(${i})">Approve</button>
-        <button onclick="reject(${i})">Reject</button>
+        Status: ${b.status}
       </div>
     `;
   });
@@ -105,3 +314,6 @@ window.onclick = function(e){
   }
 }
 </script>
+
+</body>
+</html>
