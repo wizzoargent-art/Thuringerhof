@@ -1,107 +1,104 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Hotel Booking Form</title>
-
-<!-- EmailJS SDK -->
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 
 <script>
-  emailjs.init("F65Acn1Zz8d8kPQEx");
-</script>
+emailjs.init("F65Acn1Zz8d8kPQEx");
 
-<style>
-  body {
-    font-family: Arial, sans-serif;
-    background: #f4f4f4;
-    padding: 20px;
-  }
+/* BOOKINGS STORAGE */
+let bookings = JSON.parse(localStorage.getItem("bookings")) || [];
 
-  .container {
-    max-width: 500px;
-    margin: auto;
-    background: white;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
-  }
-
-  h2 {
-    text-align: center;
-  }
-
-  input, textarea {
-    width: 100%;
-    padding: 10px;
-    margin: 8px 0;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-  }
-
-  button {
-    width: 100%;
-    padding: 10px;
-    background: black;
-    color: white;
-    border: none;
-    cursor: pointer;
-    border-radius: 5px;
-  }
-
-  button:hover {
-    background: #333;
-  }
-</style>
-</head>
-
-<body>
-
-<div class="container">
-  <h2>Hotel Booking Form</h2>
-
-  <form id="bookingForm">
-
-    <input type="text" name="name" placeholder="Full Name" required>
-
-    <input type="email" name="email" placeholder="Email Address" required>
-
-    <input type="text" name="phone" placeholder="Phone Number">
-
-    <input type="date" name="checkin" required>
-
-    <input type="date" name="checkout" required>
-
-    <input type="text" name="room" placeholder="Room Type" required>
-
-    <textarea name="message" placeholder="Special Requests"></textarea>
-
-    <button type="submit">Send Booking</button>
-
-  </form>
-</div>
-
-<script>
-document.getElementById("bookingForm").addEventListener("submit", function(e) {
+/* BOOKING FUNCTION (UPDATED ONLY WITH EMAILJS) */
+function submitBooking(e){
   e.preventDefault();
 
-  emailjs.sendForm(
-    "service_tn16zcu",
-    "template_h4oq7mf",
-    this
-  ).then(
-    function() {
-      alert("Booking sent successfully!");
-      document.getElementById("bookingForm").reset();
-    },
-    function(error) {
-      alert("Failed to send booking. Please try again.");
-      console.log(error);
-    }
-  );
-});
-</script>
+  const booking = {
+    name: name.value,
+    phone: phone.value,
+    email: email.value,
+    checkin: checkin.value,
+    checkout: checkout.value,
+    guests: guests.value,
+    room: room.value,
+    requests: requests.value,
+    status: "Pending"
+  };
 
-</body>
-</html>
+  // Save locally (your admin system still works)
+  bookings.push(booking);
+  localStorage.setItem("bookings", JSON.stringify(bookings));
+
+  // EMAIL CONFIRMATION (NEW FEATURE ONLY)
+  emailjs.send("service_tn16zcu", "template_h4oq7mf", {
+    name: booking.name,
+    email: booking.email,
+    phone: booking.phone,
+    checkin: booking.checkin,
+    checkout: booking.checkout,
+    room: booking.room,
+    message: booking.requests,
+    guests: booking.guests
+  })
+  .then(() => {
+    alert("Booking submitted successfully! Email sent.");
+    e.target.reset();
+  })
+  .catch((error) => {
+    console.log("EmailJS Error:", error);
+    alert("Booking saved, but email failed. Check EmailJS setup.");
+    e.target.reset();
+  });
+}
+
+/* ADMIN (UNCHANGED) */
+function openAdmin(){
+  document.getElementById("adminModal").style.display = "flex";
+}
+
+function closeAdmin(){
+  document.getElementById("adminModal").style.display = "none";
+}
+
+function login(){
+  if(adminUser.value === "admin" && adminPass.value === "demo123"){
+    dashboard.style.display = "block";
+    loadBookings();
+  } else {
+    alert("Invalid login");
+  }
+}
+
+function loadBookings(){
+  const container = document.getElementById("bookings");
+  container.innerHTML = "";
+
+  bookings.forEach((b, i) => {
+    container.innerHTML += `
+      <div class="booking-item">
+        <b>${b.name}</b><br/>
+        ${b.room} | ${b.checkin} → ${b.checkout}<br/>
+        Status: ${b.status}<br/><br/>
+        <button onclick="approve(${i})">Approve</button>
+        <button onclick="reject(${i})">Reject</button>
+      </div>
+    `;
+  });
+}
+
+function approve(i){
+  bookings[i].status = "Approved";
+  localStorage.setItem("bookings", JSON.stringify(bookings));
+  loadBookings();
+}
+
+function reject(i){
+  bookings[i].status = "Rejected";
+  localStorage.setItem("bookings", JSON.stringify(bookings));
+  loadBookings();
+}
+
+window.onclick = function(e){
+  const modal = document.getElementById("adminModal");
+  if(e.target === modal){
+    modal.style.display = "none";
+  }
+}
+</script>
