@@ -105,7 +105,7 @@ input, select, textarea {
   border-radius: 10px;
 }
 
-/* 🔥 SCROLL FIX */
+/* SCROLL FIX */
 #bookings {
   max-height: 300px;
   overflow-y: auto;
@@ -116,10 +116,6 @@ input, select, textarea {
   background: #1a2f45;
   padding: 10px;
   margin: 10px 0;
-}
-
-button {
-  margin-top: 5px;
 }
 </style>
 
@@ -190,7 +186,7 @@ emailjs.init("F65Acn1Zz8d8kPQEx");
 <script>
 let bookings = JSON.parse(localStorage.getItem("bookings")) || [];
 
-/* BOOKING + EMAIL */
+/* BOOKING */
 function submitBooking(e){
   e.preventDefault();
 
@@ -209,6 +205,7 @@ function submitBooking(e){
   bookings.push(booking);
   localStorage.setItem("bookings", JSON.stringify(bookings));
 
+  // 1. EMAIL TO HOTEL (BOOKING RECEIVED)
   emailjs.send("service_vb3u2rs", "template_h4oq7mf", {
     name: booking.name,
     phone: booking.phone,
@@ -217,6 +214,16 @@ function submitBooking(e){
     checkout: booking.checkout,
     room: booking.room,
     message: booking.requests,
+    guests: booking.guests
+  });
+
+  // 2. EMAIL TO CUSTOMER (CONFIRMATION)
+  emailjs.send("service_vb3u2rs", "booking_confirmation", {
+    name: booking.name,
+    email: booking.email,
+    room: booking.room,
+    checkin: booking.checkin,
+    checkout: booking.checkout,
     guests: booking.guests
   });
 
@@ -245,7 +252,7 @@ function login(){
   }
 }
 
-/* 🔥 SCROLLABLE BOOKINGS */
+/* BOOKINGS DISPLAY */
 function loadBookings(){
   const container = document.getElementById("bookings");
   container.innerHTML = "";
@@ -265,18 +272,39 @@ function loadBookings(){
   });
 }
 
+/* APPROVE */
 function approve(i){
   bookings[i].status = "Approved";
   localStorage.setItem("bookings", JSON.stringify(bookings));
   loadBookings();
+
+  emailjs.send("service_vb3u2rs", "booking_status_update", {
+    name: bookings[i].name,
+    email: bookings[i].email,
+    room: bookings[i].room,
+    checkin: bookings[i].checkin,
+    checkout: bookings[i].checkout,
+    status: "Approved"
+  });
 }
 
+/* REJECT */
 function reject(i){
   bookings[i].status = "Rejected";
   localStorage.setItem("bookings", JSON.stringify(bookings));
   loadBookings();
+
+  emailjs.send("service_vb3u2rs", "booking_status_update", {
+    name: bookings[i].name,
+    email: bookings[i].email,
+    room: bookings[i].room,
+    checkin: bookings[i].checkin,
+    checkout: bookings[i].checkout,
+    status: "Rejected"
+  });
 }
 
+/* CLOSE MODAL */
 window.onclick = function(e){
   if(e.target === document.getElementById("adminModal")){
     closeAdmin();
@@ -285,4 +313,4 @@ window.onclick = function(e){
 </script>
 
 </body>
-</html>
+  </html>
